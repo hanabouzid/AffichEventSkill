@@ -35,7 +35,7 @@ class AffichEventSkill(MycroftSkill):
 
     @intent_handler(IntentBuilder("affichBylocation_intent").require("affich").require("location").build())
     def eventsbylocation(self,message):
-        # AUTHORIZE
+        #AUTHORIZE
         creds = None
         # The file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -54,7 +54,9 @@ class AffichEventSkill(MycroftSkill):
                 # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
+
         service = build('calendar', 'v3', credentials=creds)
+
         utt = message.data.get("utterance", None)
         list = utt.split(" in ")
         location =list[1]
@@ -99,7 +101,7 @@ class AffichEventSkill(MycroftSkill):
         service = build('calendar', 'v3', credentials=creds)
         #extraire la date et le titre
         utt = message.data.get("utterance", None)
-        list1=utt.split(" starts ")
+        list1=utt.split(" start ")
         strtdate=list1[1]
         st = extract_datetime(strtdate)
         st = st[0] - self.utc_offset

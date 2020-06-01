@@ -1,1 +1,1 @@
-(?:starts(?P<date>.+))
+(?:start(?P<date>.+))
