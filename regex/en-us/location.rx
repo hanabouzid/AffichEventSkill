@@ -1,1 +1,1 @@
-(?:in(?P<location>.+))
+(?:of(?P<location>.+))

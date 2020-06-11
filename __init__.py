@@ -19,7 +19,11 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client import tools
 UTC_TZ = u'+00:00'
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+FLOW = OAuth2WebServerFlow(
+    client_id='73558912455-smu6u0uha6c2t56n2sigrp76imm2p35j.apps.googleusercontent.com',
+    client_secret='0X_IKOiJbLIU_E5gN3NefNns',
+    scope='https://www.googleapis.com/auth/calendar',
+    user_agent='Smart assistant box')
 
 
 # TODO: Change "Template" to a unique name for your skill
@@ -35,31 +39,21 @@ class AffichEventSkill(MycroftSkill):
 
     @intent_handler(IntentBuilder("affichBylocation_intent").require("affich").require("location").build())
     def eventsbylocation(self,message):
-        #AUTHORIZE
-        creds = None
-        # The file token.pickle stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists('token.pickle'):
-            with open('token.pickle', 'rb') as token:
-                creds = pickle.load(token)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    '/opt/mycroft/skills/afficheventskill.hanabouzid/client_secret.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-                # Save the credentials for the next run
-            with open('token.pickle', 'wb') as token:
-                pickle.dump(creds, token)
-
-        service = build('calendar', 'v3', credentials=creds)
+        storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
+        credentials = storage1.get()
+        if credentials is None or credentials.invalid == True:
+            credentials = tools.run_flow(FLOW, storage1)
+        print(credentials)
+        # Create an httplib2.Http object to handle our HTTP requests and
+        # authorize it with our good Credentials.
+        http = httplib2.Http()
+        http = credentials.authorize(http)
+        service = build('calendar', 'v3', http=http)
 
         utt = message.data.get("utterance", None)
-        list = utt.split(" in ")
+        list = utt.split(" of ")
         location =list[1]
+
         now = datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         events_result = service.events().list(calendarId='primary', timeMin=now,
                                              singleEvents=True,
@@ -73,96 +67,69 @@ class AffichEventSkill(MycroftSkill):
             description=event['description']
             eventstart=event['start']['dateTime']
             eventend = event['end']['dateTime']
-            attendee = event['attendees']
-            attendees= ",".join(attendee)
-            self.speak_dialog("eventbylocation", data={"summary":summary,"description":description,"attendees":attendees,"eventstart":eventstart,"eventend":eventend})
 
-    @intent_handler(IntentBuilder("affichByStartTime_intent").require("affich").require("date").build())
-    def eventbystart(self, message):
-        # AUTHORIZE
-        creds = None
-        # The file token.pickle stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists('token.pickle'):
-            with open('token.pickle', 'rb') as token:
-                creds = pickle.load(token)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    '/opt/mycroft/skills/afficheventskill.hanabouzid/client_secret.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-                # Save the credentials for the next run
-            with open('token.pickle', 'wb') as token:
-                pickle.dump(creds, token)
-        service = build('calendar', 'v3', credentials=creds)
-        #extraire la date et le titre
+            self.speak_dialog("eventbylocation", data={"summary":summary,"description":description,"eventstart":eventstart,"eventend":eventend})
+
+    @intent_handler(IntentBuilder("affichBydate_intent").require("affich").require("date").build())
+    def eventsbydate(self, message):
+        storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
+        credentials = storage1.get()
+        if credentials is None or credentials.invalid == True:
+            credentials = tools.run_flow(FLOW, storage1)
+        print(credentials)
+        # Create an httplib2.Http object to handle our HTTP requests and
+        # authorize it with our good Credentials.
+        http = httplib2.Http()
+        http = credentials.authorize(http)
+        service = build('calendar', 'v3', http=http)
         utt = message.data.get("utterance", None)
-        list1=utt.split(" start ")
-        strtdate=list1[1]
+        list = utt.split(" of ")
+        strtdate = list[1]
         st = extract_datetime(strtdate)
         st = st[0] - self.utc_offset
         date = st.strftime('%Y-%m-%dT%H:%M:00')
         date += UTC_TZ
         events_result = service.events().list(calendarId='primary', timeMin=date,
-                                             singleEvents=True,
+                                              singleEvents=True,
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
         if not events:
             self.speak_dialog("notEvent")
 
         for event in events:
-            summary=event['summary']
-            description=event['description']
-            location=event['location']
+            summary = event['summary']
+            description = event['description']
+            eventstart = event['start']['dateTime']
             eventend = event['end']['dateTime']
-            attendee = event['attendees']
-            attendees= ",".join(attendee)
-            self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "attendees": attendees,"location": location, "eventend": eventend})
+            self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
 
-    @intent_handler(IntentBuilder("").require("upcommingevents"))
-    def uppcommingevents(self,message):
-        # AUTHORIZE
-        creds = None
-        # The file token.pickle stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists('token.pickle'):
-            with open('token.pickle', 'rb') as token:
-                creds = pickle.load(token)
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    '/opt/mycroft/skills/afficheventskill.hanabouzid/client_secret.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-                # Save the credentials for the next run
-            with open('token.pickle', 'wb') as token:
-                pickle.dump(creds, token)
-
-        service = build('calendar', 'v3', credentials=creds)
-
-        # Call the Calendar API
+    @intent_handler(IntentBuilder("affichNextEvents_intent").require("upcommingevents").build())
+    def eventsbydate(self, message):
+        storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
+        credentials = storage1.get()
+        if credentials is None or credentials.invalid == True:
+            credentials = tools.run_flow(FLOW, storage1)
+        print(credentials)
+        # Create an httplib2.Http object to handle our HTTP requests and
+        # authorize it with our good Credentials.
+        http = httplib2.Http()
+        http = credentials.authorize(http)
+        service = build('calendar', 'v3', http=http)
         now = datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
         events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=20, singleEvents=True,
+                                              singleEvents=True,
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
-
         if not events:
-            print('No upcoming events found.')
-            self.speak_dialog("notevent")
-        for event in events:
-            summary= event['summary']
-            eventstart = event['start']['dateTime']
-            self.speak_dialog("nextevents", data={"summary": summary,"eventstart":eventstart})
+            self.speak_dialog("notEvent")
 
+        for event in events:
+            summary = event['summary']
+            location = event['location']
+            eventstart = event['start']['dateTime']
+            eventend = event['end']['dateTime']
+
+            self.speak_dialog("nextevents",data={"summary": summary, "location": location, "eventstart": eventstart,"eventend": eventend})
 
 
 def create_skill():
