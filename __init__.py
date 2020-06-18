@@ -37,7 +37,7 @@ class AffichEventSkill(MycroftSkill):
     def utc_offset(self):
         return timedelta(seconds=self.location['timezone']['offset'] / 1000)
 
-    @intent_handler(IntentBuilder("affichBylocation_intent").require("affich").require("location").build())
+    @intent_handler(IntentBuilder("affichBylocation_intent").require("affich").optionally("location").build())
     def eventsbylocation(self,message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
@@ -70,7 +70,7 @@ class AffichEventSkill(MycroftSkill):
 
             self.speak_dialog("eventbylocation", data={"summary":summary,"description":description,"eventstart":eventstart,"eventend":eventend})
 
-    @intent_handler(IntentBuilder("affichBydate_intent").require("affich").require("date").build())
+    @intent_handler(IntentBuilder("affichBydate_intent").require("affich").optionally("date").build())
     def eventsbydate(self, message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
@@ -103,7 +103,7 @@ class AffichEventSkill(MycroftSkill):
             eventend = event['end']['dateTime']
             self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
 
-    @intent_handler(IntentBuilder("affichNextEvents_intent").require("upcommingevents").build())
+    @intent_handler(IntentBuilder("").require("upcommingevents"))
     def eventsbydate(self, message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
