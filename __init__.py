@@ -1,18 +1,8 @@
 from __future__ import print_function
-import json
-import sys
-from adapt.intent import IntentBuilder
-from adapt.engine import IntentDeterminationEngine
-from mycroft.skills.core import MycroftSkill, intent_handler
-import pickle
-import os.path
 from mycroft.util.parse import extract_datetime
 from datetime import datetime, timedelta
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
-from mycroft.util.log import LOG
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 import httplib2
 from googleapiclient.discovery import build
 from oauth2client.file import Storage
@@ -37,7 +27,7 @@ class AffichEventSkill(MycroftSkill):
     def utc_offset(self):
         return timedelta(seconds=self.location['timezone']['offset'] / 1000)
 
-    @intent_handler(IntentBuilder("affichBylocation_intent").require("affich").optionally("location").build())
+    @intent_handler(IntentBuilder("affichByLocation_intent").require('affich').optionally('location').build())
     def eventsbylocation(self,message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
@@ -69,8 +59,7 @@ class AffichEventSkill(MycroftSkill):
             eventend = event['end']['dateTime']
 
             self.speak_dialog("eventbylocation", data={"summary":summary,"description":description,"eventstart":eventstart,"eventend":eventend})
-
-    @intent_handler(IntentBuilder("affichBydate_intent").require("affich").optionally("date").build())
+    @intent_handler(IntentBuilder("affichBydate_intent").require('affich').optionally('date').build())
     def eventsbydate(self, message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
@@ -103,7 +92,7 @@ class AffichEventSkill(MycroftSkill):
             eventend = event['end']['dateTime']
             self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
 
-    @intent_handler(IntentBuilder("").require("upcommingevents"))
+    @intent_handler(IntentBuilder("").require('upcommingevents'))
     def eventsbydate(self, message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
