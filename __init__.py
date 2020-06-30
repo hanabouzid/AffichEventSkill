@@ -50,7 +50,7 @@ class AffichEventSkill(MycroftSkill):
                                               orderBy='startTime', q=location).execute()
         events = events_result.get('items', [])
         if not events:
-            self.speak_dialog("notEvent")
+            self.speak_dialog("notevent")
 
         for event in events:
             summary=event['summary']
