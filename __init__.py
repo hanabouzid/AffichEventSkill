@@ -92,7 +92,7 @@ class AffichEventSkill(MycroftSkill):
             eventend = event['end']['dateTime']
             self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
 
-    @intent_handler(IntentBuilder("").require('upcommingevents'))
+    @intent_handler(IntentBuilder("").require('upcommingEvents'))
     def eventsbydate(self, message):
         storage1 = Storage('/opt/mycroft/skills/afficheventskill.hanabouzid/info.dat')
         credentials = storage1.get()
