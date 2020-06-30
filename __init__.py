@@ -83,14 +83,14 @@ class AffichEventSkill(MycroftSkill):
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
         if not events:
-            self.speak_dialog("notEvent")
+            self.speak_dialog('notevent')
 
         for event in events:
             summary = event['summary']
             description = event['description']
             eventstart = event['start']['dateTime']
             eventend = event['end']['dateTime']
-            self.speak_dialog("eventbystarttime",data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
+            self.speak_dialog('eventbystarttime',data={"summary": summary, "description": description, "eventstart": eventstart,"eventend": eventend})
 
     @intent_handler(IntentBuilder("").require('upcommingEvents'))
     def eventsbydate(self, message):
@@ -110,7 +110,7 @@ class AffichEventSkill(MycroftSkill):
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
         if not events:
-            self.speak_dialog("notEvent")
+            self.speak_dialog('notevent')
 
         for event in events:
             summary = event['summary']
@@ -118,7 +118,7 @@ class AffichEventSkill(MycroftSkill):
             eventstart = event['start']['dateTime']
             eventend = event['end']['dateTime']
 
-            self.speak_dialog("nextevents",data={"summary": summary, "location": location, "eventstart": eventstart,"eventend": eventend})
+            self.speak_dialog('nextevents',data={"summary": summary, "location": location, "eventstart": eventstart,"eventend": eventend})
 
 
 def create_skill():
