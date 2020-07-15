@@ -117,7 +117,6 @@ class AffichEventSkill(MycroftSkill):
             location = event['location']
             eventstart = event['start']['dateTime']
             eventend = event['end']['dateTime']
-
             self.speak_dialog('nextevents',data={"summary": summary, "location": location, "eventstart": eventstart,"eventend": eventend})
 
 
